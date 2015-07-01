@@ -383,13 +383,13 @@ void QInterProcessSignalPropogator::interProcessSignalPropogatorTcpSocketReadyRe
 #if defined(QT_NO_EXCEPTIONS)
                                 mce->placeMetaCall(this);
 #else
-                                try
-                                {
+                                try {
+                                    if (mce) {
                                         mce->placeMetaCall(this);
-                                } catch (...)
-                                {
-                                        delete mce;
-                                        throw;
+                                    }
+                                } catch (...) {
+                                    delete mce;
+                                    throw;
                                 }
                                 delete mce;
 #endif
