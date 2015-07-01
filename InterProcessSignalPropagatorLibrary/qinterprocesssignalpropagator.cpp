@@ -230,11 +230,11 @@ bool QInterProcessSignalPropogator::event(QEvent *pEvent)
             QDataStream lInterProcessSignalOutDataStream(&lInterProcessSignalDataBlock, QIODevice::WriteOnly);
 
 #if (QT_VERSION >= 0x050000)
-        lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_5_4);
+            lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_5_4);
 #elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
-        lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_4);
+            lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_4);
 #elif ((QT_VERSION >= 0x040303) && (QT_VERSION < 0x040400))
-        lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_0);
+            lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_0);
 #else
 #endif
 
