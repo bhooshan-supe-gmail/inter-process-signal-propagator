@@ -228,11 +228,22 @@ bool QInterProcessSignalPropogator::event(QEvent *pEvent)
             QByteArray lInterProcessSignalDataBlock;
 
             QDataStream lInterProcessSignalOutDataStream(&lInterProcessSignalDataBlock, QIODevice::WriteOnly);
-            lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_0);
+
+#if (QT_VERSION >= 0x050000)
+        lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_5_4);
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+        lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_4);
+#elif ((QT_VERSION >= 0x040303) && (QT_VERSION < 0x040400))
+        lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_0);
+#else
+#endif
 
             lInterProcessSignalOutDataStream << (quint16)0;
 
 #if (QT_VERSION >= 0x050000)
+
+            lInterProcessSignalOutDataStream << 8101980;
+
 #elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
 
             lInterProcessSignalOutDataStream << mce->id();
@@ -311,7 +322,15 @@ void QInterProcessSignalPropogator::interProcessSignalPropogatorTcpSocketReadyRe
 
 
         QDataStream lInterProcessSignalInDataStream(m_InterProcessSignalPropogatorTcpSocket);
+
+#if (QT_VERSION >= 0x050000)
+        lInterProcessSignalInDataStream.setVersion(QDataStream::Qt_5_4);
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+        lInterProcessSignalInDataStream.setVersion(QDataStream::Qt_4_4);
+#elif ((QT_VERSION >= 0x040303) && (QT_VERSION < 0x040400))
         lInterProcessSignalInDataStream.setVersion(QDataStream::Qt_4_0);
+#else
+#endif
 
         if (m_blockSize == 0)
         {
@@ -335,6 +354,10 @@ void QInterProcessSignalPropogator::interProcessSignalPropogatorTcpSocketReadyRe
             bool lbIsSignalDataRead = true;
 
 #if (QT_VERSION >= 0x050000)
+            int msgdata;
+            lInterProcessSignalInDataStream >> msgdata;
+            qDebug("%s::%d:msgdata=%d", __FILE__, __LINE__, msgdata);
+
 #elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
 
             int id;
