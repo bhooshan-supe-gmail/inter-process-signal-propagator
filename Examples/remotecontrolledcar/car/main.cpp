@@ -42,9 +42,9 @@
 ****************************************************************************/
 
 #include "car.h"
-#include <QtGui/QApplication>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsScene>
+#include <QApplication>
+#include <QGraphicsView>
+#include <QGraphicsScene>
 
 //BAS   #include <QtDBus/QDBusConnection>
 

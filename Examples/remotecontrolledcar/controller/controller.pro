@@ -3,9 +3,10 @@
 ######################################################################
 
 QT += network
+QT += widgets
 
 TEMPLATE = app
-TARGET = 
+TARGET = controller
 
 win32:CONFIG += console
 
