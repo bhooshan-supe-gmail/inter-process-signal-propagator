@@ -14,14 +14,18 @@
 // this class is copied from qobject_p.h to prevent us
 // from including private Qt headers.
 
-#if (QT_VERSION >= 0x050000)
+#if (QT_VERSION >= 0x050401)
 
-class QMetaCallEvent : public QEvent
+typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
+
+class Q_CORE_EXPORT QMetaCallEvent : public QEvent
 {
 public:
-    //BAS_TBR   QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
-    //BAS_TBR                  int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
-
+    QMetaCallEvent(ushort method_offset, ushort method_relative, StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
+                   int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
+    /*! \internal
+        \a signalId is in the signal index range (see QObjectPrivate::signalIndex()).
+    */
     QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
                    int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
 
@@ -34,6 +38,11 @@ public:
 
     virtual void placeMetaCall(QObject *object);
 
+    inline int nargs() const { return nargs_; }
+    inline int *types() const { return types_; }
+    inline ushort method_offset() const { return method_offset_; }
+    inline ushort method_relative() const { return method_relative_; }
+
 private:
     QtPrivate::QSlotObjectBase *slotObj_;
     const QObject *sender_;
@@ -42,12 +51,12 @@ private:
     int *types_;
     void **args_;
     QSemaphore *semaphore_;
-    //BAS_TBR   QObjectPrivate::StaticMetaCallFunction callFunction_;
+    StaticMetaCallFunction callFunction_;
     ushort method_offset_;
     ushort method_relative_;
 };
 
-#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050401))
 
 class QMetaCallEvent : public QEvent
 {
@@ -229,9 +238,9 @@ bool QInterProcessSignalPropogator::event(QEvent *pEvent)
 
             QDataStream lInterProcessSignalOutDataStream(&lInterProcessSignalDataBlock, QIODevice::WriteOnly);
 
-#if (QT_VERSION >= 0x050000)
+#if (QT_VERSION >= 0x050401)
             lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_5_4);
-#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050401))
             lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_4);
 #elif ((QT_VERSION >= 0x040303) && (QT_VERSION < 0x040400))
             lInterProcessSignalOutDataStream.setVersion(QDataStream::Qt_4_0);
@@ -240,11 +249,27 @@ bool QInterProcessSignalPropogator::event(QEvent *pEvent)
 
             lInterProcessSignalOutDataStream << (quint16)0;
 
-#if (QT_VERSION >= 0x050000)
+#if (QT_VERSION >= 0x050401)
 
-            lInterProcessSignalOutDataStream << 8101980;
+            lInterProcessSignalOutDataStream << mce->method_offset();
+            lInterProcessSignalOutDataStream << mce->method_relative();
+            lInterProcessSignalOutDataStream << mce->signalId();
+            lInterProcessSignalOutDataStream << mce->nargs();
 
-#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+            for (int n = 1; n < mce->nargs(); ++n)
+            {
+                lInterProcessSignalOutDataStream << mce->types()[n];
+
+                if(true == QMetaType::save(lInterProcessSignalOutDataStream, mce->types()[n], mce->args()[n]))
+                {
+                }
+                else
+                {
+                    lbIsSignalDataWritten = false;
+                }
+            }
+
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050401))
 
             lInterProcessSignalOutDataStream << mce->id();
             lInterProcessSignalOutDataStream << mce->signalId();
@@ -323,9 +348,9 @@ void QInterProcessSignalPropogator::interProcessSignalPropogatorTcpSocketReadyRe
 
         QDataStream lInterProcessSignalInDataStream(m_InterProcessSignalPropogatorTcpSocket);
 
-#if (QT_VERSION >= 0x050000)
+#if (QT_VERSION >= 0x050401)
         lInterProcessSignalInDataStream.setVersion(QDataStream::Qt_5_4);
-#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050401))
         lInterProcessSignalInDataStream.setVersion(QDataStream::Qt_4_4);
 #elif ((QT_VERSION >= 0x040303) && (QT_VERSION < 0x040400))
         lInterProcessSignalInDataStream.setVersion(QDataStream::Qt_4_0);
@@ -353,12 +378,38 @@ void QInterProcessSignalPropogator::interProcessSignalPropogatorTcpSocketReadyRe
         {
             bool lbIsSignalDataRead = true;
 
-#if (QT_VERSION >= 0x050000)
-            int msgdata;
-            lInterProcessSignalInDataStream >> msgdata;
-            qDebug("%s::%d:msgdata=%d", __FILE__, __LINE__, msgdata);
+#if (QT_VERSION >= 0x050401)
 
-#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
+            ushort offset;
+            ushort relative;
+            int signalId;
+            int nargs;
+
+            lInterProcessSignalInDataStream >> offset;
+            lInterProcessSignalInDataStream >> relative;
+            lInterProcessSignalInDataStream >> signalId;
+            lInterProcessSignalInDataStream >> nargs;
+
+            int *types = (int *) ::malloc(nargs*sizeof(int));
+            void **args = (void **) ::malloc(nargs*sizeof(void *));
+            args[0] = NULL;
+
+            for (int n = 1; n < nargs; ++n)
+            {
+                args[n] = NULL;
+                lInterProcessSignalInDataStream >> types[n];
+                args[n] = QMetaType::create(types[n]);
+
+                if(true == QMetaType::load(lInterProcessSignalInDataStream, types[n], args[n]))
+                {
+                }
+                else
+                {
+                    lbIsSignalDataRead = false;
+                }
+            }
+
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050401))
 
             int id;
             int signalId;
@@ -426,15 +477,12 @@ void QInterProcessSignalPropogator::interProcessSignalPropogatorTcpSocketReadyRe
             {
                 QMetaCallEvent *mce = NULL;
 
-#if (QT_VERSION >= 0x050000)
-#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050000))
-
-                QMetaCallEvent *mce = new QMetaCallEvent(id, this, signalId, nargs, types, args);
-
+#if (QT_VERSION >= 0x050401)
+                mce = new QMetaCallEvent(offset, relative, NULL, this, signalId, nargs, types, args);
+#elif ((QT_VERSION >= 0x040400) && (QT_VERSION < 0x050401))
+                mce = new QMetaCallEvent(id, this, signalId, nargs, types, args);
 #elif ((QT_VERSION >= 0x040303) && (QT_VERSION < 0x040400))
-
-                QMetaCallEvent *mce = new QMetaCallEvent(id, this, idFrom, idTo, nargs, types, args);
-
+                mce = new QMetaCallEvent(id, this, idFrom, idTo, nargs, types, args);
 #else
 #endif
 
