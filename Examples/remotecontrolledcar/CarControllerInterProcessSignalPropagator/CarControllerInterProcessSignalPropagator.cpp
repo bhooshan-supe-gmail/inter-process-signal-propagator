@@ -36,13 +36,6 @@ CCarControllerInterProcessSignalPropagator::CCarControllerInterProcessSignalProp
 {
 }
 
-/*
-CCarControllerInterProcessSignalPropagator::CCarControllerInterProcessSignalPropagator(InterProcessSignalPropogatorType type, QObject *parent, const QHostAddress &address, quint16 port)
-        :QInterProcessSignalPropogator(type, parent, address, port)
-{
-}
-*/
-
 CCarControllerInterProcessSignalPropagator::~CCarControllerInterProcessSignalPropagator()
 {
 }

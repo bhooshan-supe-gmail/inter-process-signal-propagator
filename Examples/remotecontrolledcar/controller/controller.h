@@ -55,26 +55,11 @@ class Controller : public QWidget
 public:
     Controller(QWidget *parent = 0);
 
-protected:
-    void timerEvent(QTimerEvent *event);
-
-/*
-//BAS
-private slots:
-    void on_accelerate_clicked();
-    void on_decelerate_clicked();
-    void on_left_clicked();
-    void on_right_clicked();
-*/
 protected :
 	CCarControllerInterProcessSignalPropagator *m_pCarControllerInterProcessSignalPropagator;
 
 private:
     Ui::Controller ui;
-/*
-//BAS
-    CarInterface *car;
-*/
 };
 
 #endif

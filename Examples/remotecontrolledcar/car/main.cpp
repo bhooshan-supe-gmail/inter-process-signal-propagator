@@ -62,19 +62,9 @@ int main(int argc, char *argv[])
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
     view.setBackgroundBrush(Qt::darkGray);
-//BAS       view.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Qt DBus Controlled Car"));
     view.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Qt InterProcessSignalPropagator Controlled Car"));
     view.resize(400, 300);
     view.show();
-
-/*
-//BAS
-    new CarAdaptor(car);
-
-    QDBusConnection connection = QDBusConnection::sessionBus();
-    connection.registerObject("/Car", car);
-    connection.registerService("com.trolltech.CarExample");
-*/
 
     return app.exec();
 }
