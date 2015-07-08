@@ -150,7 +150,7 @@ void Car::timerEvent(QTimerEvent *event)
     qreal turnRate = (turnRateRads * 180) / Pi;
     qreal rotation = speed * turnRate;
 
-    rotate(rotation);
-    translate(0, -speed);
+    setTransform(QTransform().rotate(rotation), true);
+    setTransform(QTransform::fromTranslate(0, -speed), true);
     update();
 }

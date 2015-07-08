@@ -3,9 +3,10 @@
 ######################################################################
 
 QT += network
+QT += widgets
 
 TEMPLATE = app
-TARGET = 
+TARGET = car
 
 win32:CONFIG += console
 

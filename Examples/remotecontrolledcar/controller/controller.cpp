@@ -65,47 +65,4 @@ Controller::Controller(QWidget *parent)
 	bRetvalue = connect(ui.decelerate, SIGNAL(clicked()), m_pCarControllerInterProcessSignalPropagator, SIGNAL(signalDecelerate()), Qt::QueuedConnection);
 	bRetvalue = connect(ui.left, SIGNAL(clicked()), m_pCarControllerInterProcessSignalPropagator, SIGNAL(signalTurnLeft()), Qt::QueuedConnection);
 	bRetvalue = connect(ui.right, SIGNAL(clicked()), m_pCarControllerInterProcessSignalPropagator, SIGNAL(signalTurnRight()), Qt::QueuedConnection);
-
-/*
-//BAS
-    car = new CarInterface("com.trolltech.CarExample", "/Car",
-                           QDBusConnection::sessionBus(), this);
-    car = new CarInterface(this);
-*/
-    startTimer(1000);
 }
-
-void Controller::timerEvent(QTimerEvent *event)
-{
-    Q_UNUSED(event);
-/*
-//BAS
-    if (car->isValid())
-        ui.label->setText("connected");
-    else
-        ui.label->setText("disconnected");
-*/
-}
-
-/*
-//BAS
-void Controller::on_accelerate_clicked()
-{
-    car->accelerate();
-}
-
-void Controller::on_decelerate_clicked()
-{
-    car->decelerate();
-}
-
-void Controller::on_left_clicked()
-{
-    car->turnLeft();
-}
-
-void Controller::on_right_clicked()
-{
-    car->turnRight();
-}
-*/

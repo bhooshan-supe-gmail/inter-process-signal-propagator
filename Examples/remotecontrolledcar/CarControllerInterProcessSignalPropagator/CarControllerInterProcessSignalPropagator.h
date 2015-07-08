@@ -40,10 +40,6 @@ class CCarControllerInterProcessSignalPropagator : public QInterProcessSignalPro
 public:
         explicit CCarControllerInterProcessSignalPropagator(InterProcessSignalPropogatorType type, QObject *parent=0, const QString &hostName = QString("127.0.0.1"), quint16 port = 8080);
 
-/*
-        explicit CCarControllerInterProcessSignalPropagator(InterProcessSignalPropogatorType type, QObject *parent=0, const QHostAddress &address = QHostAddress(QString("127.0.0.1")), quint16 port = 8080);
-*/
-
         virtual ~CCarControllerInterProcessSignalPropagator();
 
 Q_SIGNALS:
